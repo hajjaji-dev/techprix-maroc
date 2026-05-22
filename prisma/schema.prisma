@@ -1,0 +1,47 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+model Shop {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  url         String
+  logoColor   String   @default("#F0F0F0")
+  textColor   String   @default("#333")
+  deliveryHrs Int      @default(48)
+  shipCost    Int      @default(30)
+  freeFrom    Int?
+  active      Boolean  @default(true)
+  prices      Price[]
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  brand     String
+  category  String
+  imageUrl  String?
+  tags      String[]
+  slug      String   @unique
+  prices    Price[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([brand])
+  @@index([category])
+}
+
+model Price {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  shopId      Int
+  price       Float
+  oldPrice    Float?
+  discountPct Float?
+  inStock     Boolean  @default(true)
+  productUrl  String?
+  imageUrl    String?
+  scrapedAt   DateTime @default(now())
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  @@unique([productId, shopId])
+  @@index([productId])
+}
